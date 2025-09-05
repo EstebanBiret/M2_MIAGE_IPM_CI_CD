@@ -4,26 +4,29 @@ const path = require('path');
 
 const app = express();
 
-// Middleware verbeux et un peu inutile
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    next();
-});
-
+//route prinicipale
 app.get('/', (req, res) => {
-    res.send('Hello world — serveur volontairement non optimisé mais fonctionnel');
+    res.send('Hello world — serveur magnifiquement optimisé et fonctionnel');
 });
 
+//route pour les fichiers colossaux
 app.get('/big', (req, res) => {
     const filePath = path.join(__dirname, 'maybe-big-file.txt');
-        if (fs.existsSync(filePath)) {
-        const data = fs.readFileSync(filePath, 'utf8');
-        res.send(data.replace(/\n/g, '<br/>'));
-    } else {
-        res.send('Fichier introuvable');
-    }
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+
+    const stream = fs.createReadStream(filePath, { encoding: 'utf8' });
+    stream.on('error', () => res.status(404).send('Fichier introuvable'));
+    stream.on('data', chunk => res.write(chunk.replace(/\n/g, '<br/>')));
+    stream.on('end', () => res.end());
 });
 
+//middleware d’erreurs
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Erreur serveur');
+});
+
+//démarrer le serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Serveur démarré sur le port ${PORT}`);
