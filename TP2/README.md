@@ -171,11 +171,40 @@ CMD ["node", "server.js"]
 ## Étape 6 : clean du code server.js 
 Code optimisé, mais qui n'a pas de réel impact sur les performances.
 
+## Étape 7 : nouvelle image de node
+
+- Temps de build : 4.5 secondes.
+<img width="257" height="22" alt="image" src="https://github.com/user-attachments/assets/0ae2554a-6dad-4393-ae61-278ea7e4fb38" />
+
+- Taille de l'image : 263MB.
+
+<img width="434" height="37" alt="image" src="https://github.com/user-attachments/assets/da2e02f5-677e-47e9-9965-18ba6dc53c2b" />
+
+On change l'image de node de node:18-slim à node:24-alpine.
+
+Mise à jour du dockerfile :
+```dockerfile
+FROM node:24-alpine
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+
+EXPOSE 3000
+USER node
+
+CMD ["node", "server.js"]
+```
+
 ## Comparaison
 
 Au départ, le temps de build était d'environ **2 minutes**, et l'image faisait **1.73GB**. 
 
-Après plusieurs modifications dans le dockerfile et l'ajout d'un fichier .dockerignore, le temps de build est d'environ **3 secondes**, et l'image fait **302MB**.
+Après plusieurs modifications dans le dockerfile et l'ajout d'un fichier .dockerignore, le temps de build est d'environ **5 secondes**, et l'image fait **263MB**.
 
 dockerfile initial : 
 ```dockerfile
@@ -194,7 +223,7 @@ CMD ["node", "server.js"]
 
 dockerfile optimisé : 
 ```dockerfile
-FROM node:18-slim
+FROM node:24-alpine
 WORKDIR /app
 
 ENV NODE_ENV=production
